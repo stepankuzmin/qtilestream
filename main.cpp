@@ -26,7 +26,7 @@ int main(int argc, char *argv[])
     if (ipAddress.isEmpty())
         ipAddress = QHostAddress(QHostAddress::LocalHost).toString();
 
-    qDebug() << "The server is running on " << ipAddress << server->serverPort();
+    qDebug() << "QTileStream is running on" << ipAddress << server->serverPort();
     
     return a.exec();
 }

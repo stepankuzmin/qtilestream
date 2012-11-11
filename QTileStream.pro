@@ -4,18 +4,13 @@
 #
 #-------------------------------------------------
 
-QT       += core gui network webkit sql
+QT       += core network sql
 
 TARGET = QTileStream
 TEMPLATE = app
-
 
 SOURCES += main.cpp\
     tilestream.cpp
 
 HEADERS  += \
     tilestream.h
-
-FORMS    +=
-
-RESOURCES +=

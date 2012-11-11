@@ -20,3 +20,5 @@ Usage
 -----
 
     ./qtilestream [map.mbtiles]
+
+Open `example/index.html` in your browser.
