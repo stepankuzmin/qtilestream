@@ -1,22 +1,25 @@
 #include "tilestream.h"
-#include "tilestreamthread.h"
 
+#include <QtSql>
 #include <QDebug>
-#include <stdlib.h>
+#include <QCoreApplication>
 
-TileStream::TileStream(QObject *parent) :
-    QTcpServer(parent)
+TileStream::TileStream(const QString path) :
+    QTcpServer()
 {
+    this->db = QSqlDatabase::addDatabase("QSQLITE");
+    db.setDatabaseName(path);
+    if (!db.open()) {
+        qDebug() << db.lastError().text();
+    }
+}
+
+TileStream::~TileStream() {
+    this->db.close();
 }
 
 void TileStream::incomingConnection(int socketDescriptor)
 {
-    /*
-    TileStreamThread *thread = new TileStreamThread(socketDescriptor, QString(""), this);
-    connect(thread, SIGNAL(finished()), thread, SLOT(deleteLater()));
-    thread->start();
-    */
-
     QTcpSocket* s = new QTcpSocket(this);
     connect(s, SIGNAL(readyRead()), this, SLOT(readClient()));
     s->setSocketDescriptor(socketDescriptor);
@@ -27,22 +30,36 @@ void TileStream::readClient() {
     if (socket->canReadLine()) {
         QStringList tokens = QString(socket->readLine()).split(QRegExp("[ \r\n][ \r\n]*"));
         if (tokens[0] == "GET") {
-            QStringList path = QString(tokens[1]).split("/");
-            QTextStream os(socket);
-            os.setAutoDetectUnicode(true);
-            os << "HTTP/1.0 200 Ok\r\n"
-                  "Content-Type: text/html; charset=\"utf-8\"\r\n"
-                  "\r\n"
-                  "<h1>Welcome to QTileStream</h1>\n";
-
-            /* @TODO: url dispatching
-            for (int i=0; i < path.size(); ++i) {
-                os << path.at(i) << "\n";
+            //qDebug() << tokens.at(1);
+            if (tokens.at(1) == "/favicon.ico") {
+                QTextStream os(socket);
+                os.setAutoDetectUnicode(true);
+                os << "HTTP/1.0 200 Ok\r\n"
+                      "Content-Type: text/html; charset=\"utf-8\"\r\n";
             }
-            */
+            else {
+                QStringList path = QString(tokens.at(1)).split("/");
+
+                unsigned int zoom = path.at(1).toInt();
+                unsigned int column = path.at(2).toInt();
+                QStringList rowAndImageType = path.at(3).split(".");
+                unsigned int row = rowAndImageType.at(0).toInt();
+
+                QSqlQuery query;
+                query.prepare("SELECT tile_data FROM tiles WHERE zoom_level = :zoom AND tile_column = :column AND tile_row = :row");
+                query.bindValue(":zoom", zoom);
+                query.bindValue(":column", column);
+                query.bindValue(":row", zoom*zoom - 1 - row);
+
+                if (query.exec()) {
+                    while (query.next()) {
+                        QByteArray data = query.value(0).toByteArray();
+                        socket->write(data);
+                    }
+                }
+            }
 
             socket->close();
-
             if (socket->state() == QTcpSocket::UnconnectedState) {
                 delete socket;
             }

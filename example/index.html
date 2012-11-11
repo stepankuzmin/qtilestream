@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>QTileStream</title>
+  <script src='modestmaps.min.js' type='text/javascript'></script>
+  <script src='wax.mm.js' type='text/javascript'></script>
+  <link href='controls.css' rel='stylesheet' type='text/css' />
+  <script type='text/javascript'>
+    window.onload = function() {
+      
+      var tilejson = {
+        version:"1.0.0",
+        tiles: ["http://localhost:8080/{z}/{x}/{y}.png"]
+        }
+
+      var mm = com.modestmaps;
+      var m = new mm.Map('map', new wax.mm.connector(tilejson), new mm.Point(document.body.offsetWidth, 500));
+      wax.mm.zoomer(m, tilejson).appendTo(m.parent);
+      m.setCenterZoom(new mm.Location(56.8652,54.3806), 6);
+    };
+  </script>
+  <style type='text/css'>
+    #map {
+      position:absolute;
+      left:0;
+      right:0;
+      top:0;
+      bottom:0;
+    }
+  </style>
+</head>
+
+<body>
+  <div id='map'></div>
+</body>
+</html>
