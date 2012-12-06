@@ -2,35 +2,40 @@
 <html>
 <head>
   <title>QTileStream</title>
-  <script src='modestmaps.min.js' type='text/javascript'></script>
-  <script src='wax.mm.js' type='text/javascript'></script>
-  <link href='controls.css' rel='stylesheet' type='text/css' />
-  <script type='text/javascript'>
-    window.onload = function() {
-      
-      var tilejson = {
-        version:"1.0.0",
-        tiles: ["http://localhost:8080/{z}/{x}/{y}.png"]
-        }
-
-      var mm = com.modestmaps;
-      var m = new mm.Map('map', new wax.mm.connector(tilejson), new mm.Point(document.body.offsetWidth, 500));
-      wax.mm.zoomer(m, tilejson).appendTo(m.parent);
-      m.setCenterZoom(new mm.Location(56.8652,54.3806), 6);
-    };
-  </script>
-  <style type='text/css'>
-    #map {
-      position:absolute;
-      left:0;
-      right:0;
-      top:0;
-      bottom:0;
-    }
-  </style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="http://openlayers.org/dev/theme/default/style.css" type="text/css">
 </head>
-
 <body>
-  <div id='map'></div>
+  <div id="map" style="width: 100%; height: 600px"></div>
+  <script src="http://openlayers.org/dev/OpenLayers.js"></script>
+  <script>
+    var map;
+    var tiles = new OpenLayers.Layer.TMS("QTileStream", "http://localhost:8080/", {
+      getURL: tilesURL,
+      transitionEffect: "resize",
+    });
+    
+    // See: http://www.maptiler.org/google-maps-coordinates-tile-bounds-projection
+    function tilesURL (bounds) {
+      var res = this.map.getResolution();
+      var x = Math.round ((bounds.left - this.maxExtent.left) / (res * this.tileSize.w));
+      var y = Math.round ((this.maxExtent.top - bounds.top) / (res * this.tileSize.h));
+      var z = this.map.getZoom();
+      return this.url+z+"/"+x+"/"+((1 << z) - y - 1);
+    }
+    
+    map = new OpenLayers.Map('map', {
+      projection: "EPSG:900913",
+      layers: [tiles],
+      center: new OpenLayers.LonLat(56.66,54.24).transform(
+        new OpenLayers.Projection("EPSG:4326"),     // Transform from WGS 1984
+        new OpenLayers.Projection("EPSG:900913")),  // to Spherical Mercator
+      zoom: 6
+    });
+    
+    var switcherControl = new OpenLayers.Control.LayerSwitcher();
+    map.addControl(switcherControl);
+  </script>
 </body>
 </html>

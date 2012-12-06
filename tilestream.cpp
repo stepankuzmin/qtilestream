@@ -30,7 +30,7 @@ void TileStream::readClient() {
     if (socket->canReadLine()) {
         QStringList tokens = QString(socket->readLine()).split(QRegExp("[ \r\n][ \r\n]*"));
         if (tokens[0] == "GET") {
-            //qDebug() << tokens.at(1);
+            qDebug() << tokens.at(1);
             if (tokens.at(1) == "/favicon.ico") {
                 QTextStream os(socket);
                 os.setAutoDetectUnicode(true);
@@ -49,7 +49,7 @@ void TileStream::readClient() {
                 query.prepare("SELECT tile_data FROM tiles WHERE zoom_level = :zoom AND tile_column = :column AND tile_row = :row");
                 query.bindValue(":zoom", zoom);
                 query.bindValue(":column", column);
-                query.bindValue(":row", zoom*zoom - 1 - row);
+                query.bindValue(":row", row);
 
                 if (query.exec()) {
                     while (query.next()) {

@@ -6,7 +6,7 @@
 
 QT       += core network sql
 
-TARGET = QTileStream
+TARGET = qtilestream
 TEMPLATE = app
 
 SOURCES += main.cpp\
