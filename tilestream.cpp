@@ -31,7 +31,7 @@ void TileStream::readClient() {
         QStringList tokens = QString(socket->readLine()).split(QRegExp("[ \r\n][ \r\n]*"));
         if (tokens[0] == "GET") {
             qDebug() << tokens.at(1);
-            if (tokens.at(1) == "/favicon.ico") {
+            if ((tokens.at(1) == "/") || (tokens.at(1) == "/favicon.ico")) {
                 QTextStream os(socket);
                 os.setAutoDetectUnicode(true);
                 os << "HTTP/1.0 200 Ok\r\n"
