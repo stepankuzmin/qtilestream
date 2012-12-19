@@ -7,7 +7,8 @@
 TileStream::TileStream(const QString path) :
     QTcpServer()
 {
-    this->db = QSqlDatabase::addDatabase("QSQLITE");
+    rx = QRegExp("/\\d+/\\d+/\\d+.png");
+    db = QSqlDatabase::addDatabase("QSQLITE");
     db.setDatabaseName(path);
     if (!db.open()) {
         qDebug() << db.lastError().text();
@@ -28,18 +29,13 @@ void TileStream::incomingConnection(int socketDescriptor)
 void TileStream::readClient() {
     QTcpSocket* socket = (QTcpSocket*)sender();
     if (socket->canReadLine()) {
-        QStringList tokens = QString(socket->readLine()).split(QRegExp("[ \r\n][ \r\n]*"));
-        if (tokens[0] == "GET") {
-            qDebug() << tokens.at(1);
-            if ((tokens.at(1) == "/") || (tokens.at(1) == "/favicon.ico")) {
-                QTextStream os(socket);
-                os.setAutoDetectUnicode(true);
-                os << "HTTP/1.0 200 Ok\r\n"
-                      "Content-Type: text/html; charset=\"utf-8\"\r\n";
-            }
-            else {
-                QStringList path = QString(tokens.at(1)).split("/");
+        QString req = QString(socket->readLine());
+        qDebug() << req;
 
+        QStringList tokens = req.split(QRegExp("[ \r\n][ \r\n]*"));
+        if (tokens[0] == "GET") {
+            if (rx.exactMatch(tokens[1])) {
+                QStringList path = QString(tokens.at(1)).split("/");
                 unsigned int zoom = path.at(1).toInt();
                 unsigned int column = path.at(2).toInt();
                 QStringList rowAndImageType = path.at(3).split(".");
@@ -57,7 +53,7 @@ void TileStream::readClient() {
                         if (data.isEmpty()) {
                             QTextStream os(socket);
                             os.setAutoDetectUnicode(true);
-                            os << "HTTP/1.0 404 Not Found\r\n"
+                            os << "HTTP/1.1 404 Not Found\r\n"
                                   "Content-Type: text/html; charset=\"utf-8\"\r\n";
                         }
                         else {
@@ -65,6 +61,12 @@ void TileStream::readClient() {
                         }
                     }
                 }
+            }
+            else {
+                QTextStream os(socket);
+                os.setAutoDetectUnicode(true);
+                os << "HTTP/1.1 404 Not Found\r\n"
+                      "Content-Type: text/html; charset=\"utf-8\"\r\n";
             }
 
             socket->close();

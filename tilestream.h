@@ -2,6 +2,7 @@
 #define TILESTREAM_H
 
 #include <QtSql>
+#include <QRegExp>
 #include <QTcpServer>
 #include <QTcpSocket>
 #include <QByteArray>
@@ -16,6 +17,7 @@ public:
     ~TileStream();
 
 private:
+    QRegExp rx;
     QSqlDatabase db;
 
 protected:
