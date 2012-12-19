@@ -54,7 +54,15 @@ void TileStream::readClient() {
                 if (query.exec()) {
                     while (query.next()) {
                         QByteArray data = query.value(0).toByteArray();
-                        socket->write(data);
+                        if (data.isEmpty()) {
+                            QTextStream os(socket);
+                            os.setAutoDetectUnicode(true);
+                            os << "HTTP/1.0 404 Not Found\r\n"
+                                  "Content-Type: text/html; charset=\"utf-8\"\r\n";
+                        }
+                        else {
+                            socket->write(data);
+                        }
                     }
                 }
             }
