@@ -1,16 +1,21 @@
 #-------------------------------------------------
 #
-# Project created by QtCreator 2012-11-06T13:40:42
+# Project created by QtCreator 2012-12-23T11:49:59
 #
 #-------------------------------------------------
 
 QT       += core network sql
 
+greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
+
 TARGET = qtilestream
 TEMPLATE = app
 
+
 SOURCES += main.cpp\
-    tilestream.cpp
+    qtilestream.cpp \
+    qtilestreamthread.cpp
 
 HEADERS  += \
-    tilestream.h
+    qtilestream.h \
+    qtilestreamthread.h

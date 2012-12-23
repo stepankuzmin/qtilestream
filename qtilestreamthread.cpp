@@ -1,38 +1,22 @@
-#include "tilestream.h"
+#include "qtilestreamthread.h"
 
-#include <QtSql>
-#include <QDebug>
-#include <QCoreApplication>
+#include <QtNetwork>
 
-TileStream::TileStream(const QString path) :
-    QTcpServer()
+QTileStreamThread::QTileStreamThread(int socketDescriptor, QSqlDatabase *db, QObject *parent)
+    : QThread(parent), socketDescriptor(socketDescriptor)
 {
+    // regexp matches "/1/2/3.png"
     rx = QRegExp("/\\d+/\\d+/\\d+.png");
-    db = QSqlDatabase::addDatabase("QSQLITE");
-    db.setDatabaseName(path);
-    if (!db.open()) {
-        qDebug() << db.lastError().text();
-    }
+
+    this->db = db;
 }
 
-TileStream::~TileStream() {
-    this->db.close();
-}
-
-void TileStream::incomingConnection(int socketDescriptor)
-{
-    QTcpSocket* s = new QTcpSocket(this);
-    connect(s, SIGNAL(readyRead()), this, SLOT(readClient()));
-    s->setSocketDescriptor(socketDescriptor);
-}
-
-void TileStream::readClient() {
+void QTileStreamThread::readClient() {
     QTcpSocket* socket = (QTcpSocket*)sender();
     if (socket->canReadLine()) {
         QString req = QString(socket->readLine());
-        qDebug() << req;
-
         QStringList tokens = req.split(QRegExp("[ \r\n][ \r\n]*"));
+        qDebug() << tokens[1];
         if (tokens[0] == "GET") {
             if (rx.exactMatch(tokens[1])) {
                 QStringList path = QString(tokens.at(1)).split("/");
@@ -54,7 +38,8 @@ void TileStream::readClient() {
                             QTextStream os(socket);
                             os.setAutoDetectUnicode(true);
                             os << "HTTP/1.1 404 Not Found\r\n"
-                                  "Content-Type: text/html; charset=\"utf-8\"\r\n";
+                                  "Content-Type: text/html; charset=\"utf-8\"\r\n"
+                                  "Connection: close\r\n";
                         }
                         else {
                             socket->write(data);
@@ -66,13 +51,15 @@ void TileStream::readClient() {
                 QTextStream os(socket);
                 os.setAutoDetectUnicode(true);
                 os << "HTTP/1.1 404 Not Found\r\n"
-                      "Content-Type: text/html; charset=\"utf-8\"\r\n";
+                      "Content-Type: text/html; charset=\"utf-8\"\r\n"
+                      "Connection: close\r\n\n"
+                      "There is no spoon.";
             }
+        }
 
-            socket->close();
-            if (socket->state() == QTcpSocket::UnconnectedState) {
-                delete socket;
-            }
+        socket->close();
+        if (socket->state() == QTcpSocket::UnconnectedState) {
+            delete socket;
         }
     }
 }

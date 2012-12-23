@@ -1,7 +1,8 @@
-#include <QtCore/QCoreApplication>
-#include <QNetworkInterface>
+#include <QtNetwork>
 #include <QStringList>
-#include "tilestream.h"
+#include <QtCore/QCoreApplication>
+
+#include "qtilestream.h"
 
 int main(int argc, char *argv[])
 {
@@ -13,7 +14,7 @@ int main(int argc, char *argv[])
         return -1;
     }
     else {
-        TileStream *server = new TileStream(argv[1]);
+        QTileStream *server = new QTileStream(argv[1]);
 
         if (!server->listen(QHostAddress::Any, 8080)) {
             qDebug() << "unable to start the server:" << server->errorString();
@@ -24,8 +25,7 @@ int main(int argc, char *argv[])
         QString ipAddress;
         QList<QHostAddress> ipAddressesList = QNetworkInterface::allAddresses();
         for (int i = 0; i < ipAddressesList.size(); ++i) {
-            if (ipAddressesList.at(i) != QHostAddress::LocalHost &&
-                ipAddressesList.at(i).toIPv4Address()) {
+            if (ipAddressesList.at(i) != QHostAddress::LocalHost && ipAddressesList.at(i).toIPv4Address()) {
                 ipAddress = ipAddressesList.at(i).toString();
                 break;
             }
