@@ -16,7 +16,10 @@ public:
     ~QTileStream();
 
 protected:
-    void incomingConnection(qintptr socketDescriptor);
+    // Qt 5.0 QTcpServer incomingConnection uses qintptr instead of int
+    // void incomingConnection(qintptr socketDescriptor);
+
+    void incomingConnection(int socketDescriptor);
 
 private:
     QSqlDatabase db;

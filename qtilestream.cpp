@@ -20,7 +20,9 @@ QTileStream::~QTileStream() {
     db.close();
 }
 
-void QTileStream::incomingConnection(qintptr socketDescriptor)
+// Qt 5.0 QTcpServer incomingConnection uses qintptr instead of int
+// void QTileStream::incomingConnection(qintptr socketDescriptor)
+void QTileStream::incomingConnection(int socketDescriptor)
 {
     QTcpSocket* socket = new QTcpSocket(this);
     QTileStreamThread *thread = new QTileStreamThread(socketDescriptor, &db, this);
