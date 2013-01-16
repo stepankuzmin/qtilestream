@@ -1,20 +1,24 @@
 #include "qtilestreamthread.h"
 
-#include <QtNetwork>
-
 QTileStreamThread::QTileStreamThread(int socketDescriptor, QSqlDatabase *db, QObject *parent)
     : QThread(parent), socketDescriptor(socketDescriptor)
 {
-    // regexp matches "/1/2/3.png"
-    rx = QRegExp("/\\d+/\\d+/\\d+.png");
-
+    rx = QRegExp("/\\d+/\\d+/\\d+.png"); // regexp matches "/1/2/3.png"
     this->db = db;
 }
 
-void QTileStreamThread::readClient() {
-    QTcpSocket* socket = (QTcpSocket*)sender();
-    if (socket->canReadLine()) {
-        QString req = QString(socket->readLine());
+void QTileStreamThread::run()
+{
+    QTcpSocket tcpSocket;
+    if (!tcpSocket.setSocketDescriptor(socketDescriptor)) {
+        emit error(tcpSocket.error());
+        return;
+    }
+
+    QByteArray data;
+    tcpSocket.waitForReadyRead(-1);
+    if (tcpSocket.canReadLine()) {
+        QString req = QString(tcpSocket.readLine());
         QStringList tokens = req.split(QRegExp("[ \r\n][ \r\n]*"));
         qDebug() << tokens[1];
         if (tokens[0] == "GET") {
@@ -33,33 +37,29 @@ void QTileStreamThread::readClient() {
 
                 if (query.exec()) {
                     while (query.next()) {
-                        QByteArray data = query.value(0).toByteArray();
-                        if (data.isEmpty()) {
-                            QTextStream os(socket);
-                            os.setAutoDetectUnicode(true);
-                            os << "HTTP/1.1 404 Not Found\r\n"
-                                  "Content-Type: text/html; charset=\"utf-8\"\r\n"
-                                  "Connection: close\r\n";
-                        }
-                        else {
-                            socket->write(data);
-                        }
+                        data = query.value(0).toByteArray();
                     }
                 }
             }
-            else {
-                QTextStream os(socket);
-                os.setAutoDetectUnicode(true);
-                os << "HTTP/1.1 404 Not Found\r\n"
-                      "Content-Type: text/html; charset=\"utf-8\"\r\n"
-                      "Connection: close\r\n\n"
-                      "There is no spoon.";
-            }
-        }
-
-        socket->close();
-        if (socket->state() == QTcpSocket::UnconnectedState) {
-            delete socket;
         }
     }
+
+    if (data.isEmpty()) {
+        tcpSocket.write("HTTP/1.0 404 Not Found\r\n"
+                        "Content-Type: text/html; charset=\"utf-8\"\r\n"
+                        "Connection: close\r\n"
+                        "\r\n"
+                        "There is no spoon");
+    }
+    else {
+        tcpSocket.write(QString("HTTP/1.1 200 OK\r\n"
+                "Content-Type: image/png\r\n"
+                "Content-Length: %1\r\n"
+                "Connection: close\r\n"
+                "\r\n").arg(data.length()).toAscii());
+        tcpSocket.write(data);
+    }
+
+    tcpSocket.disconnectFromHost();
+    tcpSocket.waitForDisconnected();
 }

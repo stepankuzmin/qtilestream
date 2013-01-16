@@ -21,4 +21,4 @@ Usage
 
     ./qtilestream [map.mbtiles]
 
-Open `example/index.html` in your browser.
+Open `examples/openlayers.html` or `examples/leaflet.html` in your browser.

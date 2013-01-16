@@ -1,14 +1,13 @@
 #include <QtNetwork>
-#include <QStringList>
 #include <QtCore/QCoreApplication>
 
 #include "qtilestream.h"
 
 int main(int argc, char *argv[])
 {
-    QCoreApplication a(argc, argv);
+    QCoreApplication app(argc, argv);
 
-    QStringList args = a.arguments();
+    QStringList args = app.arguments();
     if (args.count() != 2) {
         qDebug() << "usage: qtilestream [map.mbtiles]";
         return -1;
@@ -36,6 +35,6 @@ int main(int argc, char *argv[])
 
         qDebug() << "qtilestream is running on" << ipAddress << server->serverPort();
     }
-    
-    return a.exec();
+
+    return app.exec();
 }

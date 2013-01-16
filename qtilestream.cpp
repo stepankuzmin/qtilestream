@@ -1,8 +1,6 @@
 #include "qtilestream.h"
 #include "qtilestreamthread.h"
 
-#include <stdlib.h>
-
 QTileStream::QTileStream(QString path, QObject *parent) :
     QTcpServer(parent)
 {
@@ -20,13 +18,9 @@ QTileStream::~QTileStream() {
     db.close();
 }
 
-// Qt 5.0 QTcpServer incomingConnection uses qintptr instead of int
-// void QTileStream::incomingConnection(qintptr socketDescriptor)
 void QTileStream::incomingConnection(int socketDescriptor)
 {
-    QTcpSocket* socket = new QTcpSocket(this);
     QTileStreamThread *thread = new QTileStreamThread(socketDescriptor, &db, this);
-    connect(socket, SIGNAL(readyRead()), thread, SLOT(readClient()));
+    connect(thread, SIGNAL(finished()), thread, SLOT(deleteLater()));
     thread->start();
-    socket->setSocketDescriptor(socketDescriptor);
 }

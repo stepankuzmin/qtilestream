@@ -2,17 +2,17 @@
 #define QTILESTREAMTHREAD_H
 
 #include <QtSql>
+#include <QRegExp>
 #include <QThread>
+#include <QString>
 #include <QTcpSocket>
 
 class QTileStreamThread : public QThread
 {
     Q_OBJECT
 public:
-    explicit QTileStreamThread(int socketDescriptor, QSqlDatabase *db, QObject *parent);
-
-public slots:
-    void readClient();
+    QTileStreamThread(int socketDescriptor, QSqlDatabase *db, QObject *parent);
+    void run();
 
 signals:
     void error(QTcpSocket::SocketError socketError);

@@ -1,6 +1,6 @@
 #-------------------------------------------------
 #
-# Project created by QtCreator 2012-12-23T11:49:59
+# Project created by QtCreator 2013-01-16T14:23:46
 #
 #-------------------------------------------------
 
@@ -12,7 +12,7 @@ TARGET = qtilestream
 TEMPLATE = app
 
 
-SOURCES += main.cpp\
+SOURCES += main.cpp \
     qtilestream.cpp \
     qtilestreamthread.cpp
 
