@@ -1,3 +1,4 @@
+#include <QString>
 #include <QtNetwork>
 #include <QtCore/QCoreApplication>
 
@@ -8,14 +9,15 @@ int main(int argc, char *argv[])
     QCoreApplication app(argc, argv);
 
     QStringList args = app.arguments();
-    if (args.count() != 2) {
-        qDebug() << "usage: qtilestream [map.mbtiles]";
+    if (args.count() != 3) {
+        qDebug() << "usage: qtilestream [port] [file]";
         return -1;
     }
     else {
-        QTileStream *server = new QTileStream(argv[1]);
+        QString port(argv[1]);
+        QTileStream *server = new QTileStream(argv[2]);
 
-        if (!server->listen(QHostAddress::Any, 8080)) {
+        if (!server->listen(QHostAddress::Any, port.toInt())) {
             qDebug() << "unable to start the server:" << server->errorString();
             server->close();
             return -1;
