@@ -19,6 +19,6 @@ Install
 Usage
 -----
 
-    ./qtilestream [map.mbtiles]
+    ./qtilestream [port] [file]
 
 Open `examples/openlayers.html` or `examples/leaflet.html` in your browser.
