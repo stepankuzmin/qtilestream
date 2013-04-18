@@ -19,6 +19,6 @@ Install
 Usage
 -----
 
-    ./qtilestream [port] [file]
+    ./qtilestream --port=8080 --mbtiles=sverdlovsk.mbtiles,world.mbtiles
 
 Open `examples/openlayers.html` or `examples/leaflet.html` in your browser.
