@@ -1,10 +1,10 @@
 #include "qtilestreamthread.h"
 
-QTileStreamThread::QTileStreamThread(int socketDescriptor, QSqlDatabase *db, QObject *parent)
+QTileStreamThread::QTileStreamThread(int socketDescriptor, QVector<QSqlDatabase> *databases, QObject *parent)
     : QThread(parent), socketDescriptor(socketDescriptor)
 {
     rx = QRegExp("/\\d+/\\d+/\\d+.png"); // regexp matches "/1/2/3.png"
-    this->db = db;
+    this->db = databases;
 }
 
 void QTileStreamThread::run()
@@ -29,17 +29,24 @@ void QTileStreamThread::run()
                 QStringList rowAndImageType = path.at(3).split(".");
                 unsigned int row = rowAndImageType.at(0).toInt();
 
-                QSqlQuery query;
-                query.prepare("SELECT tile_data FROM tiles WHERE zoom_level = :zoom AND tile_column = :column AND tile_row = :row");
-                query.bindValue(":zoom", zoom);
-                query.bindValue(":column", column);
-                query.bindValue(":row", row);
+                for (int i = 0; i < db->size(); ++i) {
+                    QSqlQuery query(db->at(i));
+                    query.prepare("SELECT tile_data FROM tiles WHERE zoom_level = :zoom AND tile_column = :column AND tile_row = :row");
+                    query.bindValue(":zoom", zoom);
+                    query.bindValue(":column", column);
+                    query.bindValue(":row", row);
 
-                if (query.exec()) {
-                    while (query.next()) {
-                        data = query.value(0).toByteArray();
+                    if (query.exec()) {
+                        while (query.next()) {
+                            data = query.value(0).toByteArray();
+                        }
+                    }
+
+                    if (!data.isEmpty()) {
+                        continue;
                     }
                 }
+
             }
         }
     }

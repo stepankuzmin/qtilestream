@@ -12,14 +12,14 @@ class QTileStream : public QTcpServer
     Q_OBJECT
 
 public:
-    QTileStream(QString path, QObject *parent = 0);
+    QTileStream(QStringList mbtiles, QObject *parent = 0);
     ~QTileStream();
 
 protected:
     void incomingConnection(int socketDescriptor);
 
 private:
-    QSqlDatabase db;
+    QVector<QSqlDatabase> db;
     
 };
 

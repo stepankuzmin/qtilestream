@@ -1,21 +1,27 @@
 #include "qtilestream.h"
 #include "qtilestreamthread.h"
 
-QTileStream::QTileStream(QString path, QObject *parent) :
+QTileStream::QTileStream(QStringList mbtiles, QObject *parent) :
     QTcpServer(parent)
 {
-    db = QSqlDatabase::addDatabase("QSQLITE");
-    db.setDatabaseName(path);
-    if (!db.open()) {
-        qDebug() << db.lastError().text();
-    }
-    else {
-        qDebug() << "Using" << path;
+    for (int i = 0; i < mbtiles.size(); ++i) {
+        QString path = mbtiles.at(i);
+        QSqlDatabase database = QSqlDatabase::addDatabase("QSQLITE", path);
+        database.setDatabaseName(path);
+        if (!database.open()) {
+            qDebug() << database.lastError().text();
+        }
+        else {
+            db.append(database);
+            qDebug() << path << "opened";
+        }
     }
 }
 
 QTileStream::~QTileStream() {
-    db.close();
+    for (int i = 0; i < db.size(); ++i) {
+        db[i].close();
+    }
 }
 
 void QTileStream::incomingConnection(int socketDescriptor)

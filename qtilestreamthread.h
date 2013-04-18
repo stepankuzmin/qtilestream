@@ -11,7 +11,7 @@ class QTileStreamThread : public QThread
 {
     Q_OBJECT
 public:
-    QTileStreamThread(int socketDescriptor, QSqlDatabase *db, QObject *parent);
+    QTileStreamThread(int socketDescriptor, QVector<QSqlDatabase> *databases, QObject *parent);
     void run();
 
 signals:
@@ -19,7 +19,7 @@ signals:
 
 private:
     QRegExp rx;
-    QSqlDatabase *db;
+    QVector<QSqlDatabase> *db;
     int socketDescriptor;
 };
 
