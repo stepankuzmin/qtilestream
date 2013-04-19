@@ -13,6 +13,7 @@ class QTileStream : public QTcpServer
 
 public:
     QTileStream(QStringList mbtiles, QObject *parent = 0);
+    QTileStream(QStringList mbtiles, QByteArray notFoundImageData, QObject *parent = 0);
     ~QTileStream();
 
 protected:
@@ -20,6 +21,7 @@ protected:
 
 private:
     QVector<QSqlDatabase> db;
+    QByteArray notFoundImage;
     
 };
 
