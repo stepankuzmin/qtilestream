@@ -5,6 +5,7 @@ QTileStreamThread::QTileStreamThread(int socketDescriptor, QVector<QSqlDatabase>
 {
     rx = QRegExp("/\\d+/\\d+/\\d+.png"); // regexp matches "/1/2/3.png"
     this->db = databases;
+    notFoundImage = new QByteArray(); // @TODO: fixit
 }
 
 QTileStreamThread::QTileStreamThread(int socketDescriptor, QVector<QSqlDatabase> *databases, QByteArray *notFoundImageData, QObject *parent)
@@ -60,12 +61,21 @@ void QTileStreamThread::run()
     }
 
     if (data.isEmpty()) {
-        tcpSocket.write(QString("HTTP/1.1 200 OK\r\n"
-                "Content-Type: image/png\r\n"
-                "Content-Length: %1\r\n"
-                "Connection: close\r\n"
-                "\r\n").arg(notFoundImage->length()).toAscii());
-        tcpSocket.write(*notFoundImage);
+        if (notFoundImage->isEmpty()) {
+            tcpSocket.write("HTTP/1.0 404 Not Found\r\n"
+                                    "Content-Type: text/html; charset=\"utf-8\"\r\n"
+                                    "Connection: close\r\n"
+                                    "\r\n"
+                                    "There is no spoon");
+        }
+        else {
+            tcpSocket.write(QString("HTTP/1.1 200 OK\r\n"
+                    "Content-Type: image/png\r\n"
+                    "Content-Length: %1\r\n"
+                    "Connection: close\r\n"
+                    "\r\n").arg(notFoundImage->length()).toAscii());
+            tcpSocket.write(*notFoundImage);
+        }
     }
     else {
         tcpSocket.write(QString("HTTP/1.1 200 OK\r\n"

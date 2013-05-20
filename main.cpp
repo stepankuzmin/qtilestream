@@ -57,6 +57,7 @@ int main(int argc, char *argv[])
             if (notFoundImage.open(QIODevice::ReadOnly)) {
                 QByteArray notFoundImageData = notFoundImage.readAll();
                 notFoundImage.close();
+                qDebug() << "Not found image is set to" << notFoundImagePath;
                 server = new QTileStream(mbtiles, notFoundImageData);
             }
             else {
