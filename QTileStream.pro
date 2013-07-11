@@ -6,6 +6,8 @@
 
 QT       += core network sql
 
+CONFIG += console
+
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 TARGET = qtilestream
